@@ -78,6 +78,11 @@ jobs:
         with:
           path: build/
 
+      - name: Move artifacts to the correct location
+        run: |
+          mkdir -p build
+          find build/ -mindepth 2 -type f -exec mv -t build/ {} +
+
       - name: Set release tag
         run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
