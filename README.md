@@ -70,6 +70,10 @@ k8run deployment foobar \
   --copy-folder /Users/myuser/projects/foobar
 ```
 
+## Release
+
+TODO
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE)

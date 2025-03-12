@@ -78,10 +78,6 @@ jobs:
         with:
           path: build/
 
-      - name: Flatten artifact structure
-        run: |
-          mv build/k8run-* build/
-
       - name: Set release tag
         run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
