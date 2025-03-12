@@ -16,12 +16,12 @@
 
 
 ## Installation
-Clone the repository and build the CLI:
 
+You can download [here](https://github.com/lucasvmiguel/k8run/releases)
+
+if you have Golang installed, you can also install by running:
 ```bash
-git clone https://github.com/lucasvmiguel/k8run.git
-cd k8run
-go build -o k8run
+go install github.com/lucasvmiguel/k8run@latest
 ```
 
 ## Usage
@@ -69,13 +69,6 @@ k8run deployment foobar \
   --entrypoint "node index.js" \
   --copy-folder /Users/myuser/projects/foobar
 ```
-
-
-
-## How It Works
-	1.	Generates Kubernetes YAML manifests for Deployment, Service, and Ingress.
-	2.	Applies the manifests using kubectl.
-	3.	Copies files into the container using kubectl cp (if specified).
 
 ## License
 

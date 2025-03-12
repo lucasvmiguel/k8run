@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-      - 'release/**'
+      - "release/**"
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
     branches:
       - main
@@ -23,7 +23,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: "1.23"
 
       - name: Install dependencies
         run: go mod tidy
@@ -48,17 +48,20 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: "1.23"
 
       - name: Build
         run: |
-          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o build/k8run-${{ matrix.os }}-${{ matrix.arch }} .
+          mkdir -p build
+          EXT=""
+          if [ "${{ matrix.os }}" == "windows" ]; then EXT=".exe"; fi
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o build/k8run-${{ matrix.os }}-${{ matrix.arch }}$EXT .
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: k8run-${{ matrix.os }}-${{ matrix.arch }}
-          path: build/k8run-${{ matrix.os }}-${{ matrix.arch }}
+          path: build/k8run-${{ matrix.os }}-${{ matrix.arch }}*
 
   release:
     name: Create GitHub Release
@@ -70,17 +73,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download build artifacts
+      - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
           path: build/
 
+      - name: Flatten artifact structure
+        run: |
+          mv build/k8run-* build/
+
       - name: Set release tag
         run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Make Linux and MacOS builds executable
+        run: |
+          chmod +x build/k8run-linux-*
+          chmod +x build/k8run-darwin-*
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.PAT }} # Use a personal access token with 'repo' scope
           tag_name: ${{ env.RELEASE_TAG }}
           name: Release ${{ env.RELEASE_TAG }}
           draft: false
