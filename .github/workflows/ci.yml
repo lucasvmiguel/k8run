@@ -78,11 +78,6 @@ jobs:
         with:
           path: build/
 
-      - name: Move artifacts to the correct location
-        run: |
-          mkdir -p build
-          find build/ -mindepth 2 -type f -exec mv -t build/ {} +
-
       - name: Set release tag
         run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
@@ -100,9 +95,9 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            build/k8run-linux-amd64
-            build/k8run-linux-arm64
-            build/k8run-windows-amd64.exe
-            build/k8run-windows-arm64.exe
-            build/k8run-darwin-amd64
-            build/k8run-darwin-arm64
+            build/k8run-linux-amd64/k8run-linux-amd64
+            build/k8run-linux-arm64/k8run-linux-arm64
+            build/k8run-windows-amd64/k8run-windows-amd64.exe
+            build/k8run-windows-arm64/k8run-windows-arm64.exe
+            build/k8run-darwin-amd64/k8run-darwin-amd64
+            build/k8run-darwin-arm64/k8run-darwin-arm64
