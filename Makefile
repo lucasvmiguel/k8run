@@ -1,4 +1,4 @@
-VERSION ?= 0.0.9
+VERSION ?= 0.0.10
 MAIN_GO = main.go
 
 test:
@@ -7,7 +7,7 @@ test:
 build:
 	go build -o bin/ ./...
 
-update-version:
+cli-update-version:
 	@if [ ! -f $(MAIN_GO) ]; then \
 		echo "Error: $(MAIN_GO) not found!"; \
 		exit 1; \
@@ -22,6 +22,10 @@ update-version:
 	git commit -am "Update version to $(VERSION)"
 	git push origin main
 
-release: update-version
+install-script-update-version:
+	sed -i '' 's/VERSION=.*/VERSION="$(VERSION)"/' install.sh; \
+	echo "✅ Version updated to $(VERSION)."
+
+release: cli-update-version install-script-update-version
 	git tag -a v$(VERSION) -m "Release version $(VERSION)"
 	git push origin v$(VERSION)

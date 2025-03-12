@@ -2,6 +2,12 @@
 
 **k8run** is a CLI tool designed to quickly prototype Kubernetes deployments, services, and ingresses. It simplifies the process of setting up a working Kubernetes environment for development and testing.
 
+> ⚠️ **Warning**: Although this tool may work fine in a production environment, it’s not recommended since it was specifically designed for testing and prototyping applications.
+
+## Why?
+
+Containerization offers many advantages in a production environment, but sometimes you just want to quickly test or prototype something without the hassle of building and publishing a Docker image. This tool is designed to make deploying to Kubernetes quick and easy.
+
 ## Requirements
 
 * [kubectl](https://kubernetes.io/docs/reference/kubectl/)
@@ -16,12 +22,16 @@
 
 ## Installation
 
-You can download [here](https://github.com/lucasvmiguel/k8run/releases)
+```bash
+bash <(curl -sSL https://raw.githubusercontent.com/lucasvmiguel/k8run/main/install.sh)
+```
 
 if you have Golang installed, you can also install by running:
 ```bash
 go install github.com/lucasvmiguel/k8run@latest
 ```
+
+You can also download the binary [here](https://github.com/lucasvmiguel/k8run/releases)
 
 ## Usage
 
