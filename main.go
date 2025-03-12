@@ -15,12 +15,13 @@ import (
 
 func main() {
 	cmd := &cli.Command{
-		Name:  "k8run",
-		Usage: "TODO",
+		Name:    "k8run",
+		Usage:   "k8run is a CLI tool designed to quickly prototype Kubernetes deployments, services, and ingresses. It simplifies the process of setting up a working Kubernetes environment for development and testing.",
+		Version: "0.0.8",
 		Commands: []*cli.Command{
 			{
 				Name:  "destroy",
-				Usage: "Needs to be implemented",
+				Usage: "TODO",
 			},
 			{
 				Name:      "deployment",

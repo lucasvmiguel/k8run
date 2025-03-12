@@ -2,9 +2,6 @@
 
 **k8run** is a CLI tool designed to quickly prototype Kubernetes deployments, services, and ingresses. It simplifies the process of setting up a working Kubernetes environment for development and testing.
 
-TODO: Add video of how to create and destroy
-
-
 ## Requirements
 
 * [kubectl](https://kubernetes.io/docs/reference/kubectl/)
@@ -71,6 +68,15 @@ k8run deployment foobar \
   --entrypoint "node index.js" \
   --copy-folder /Users/myuser/projects/foobar
 ```
+
+## Roadmap
+
+* Add video of how to use the tool
+* Remove dependency of kubectl
+* Add integration tests
+* Add destroy command
+* Add job command
+* Add cronjob command
 
 ## Release
 
