@@ -20,8 +20,49 @@ func main() {
 		Version: "0.0.9",
 		Commands: []*cli.Command{
 			{
-				Name:  "destroy",
-				Usage: "TODO",
+				Name:      "destroy",
+				Usage:     "Destroys a deployment with all its dependending resources",
+				ArgsUsage: "<name>",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "namespace",
+						Usage:    "namespace to be used. eg: 'default'",
+						Value:    "default",
+						Required: false,
+					},
+					&cli.DurationFlag{
+						Name:     "timeout",
+						Usage:    "timeout for the deployment. eg: 30s",
+						Required: false,
+						Value:    time.Minute,
+					},
+					&cli.BoolFlag{
+						Name:     "yes",
+						Aliases:  []string{"y"},
+						Usage:    "skips the confirmation",
+						Required: false,
+					},
+				},
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					fmt.Println()
+					if !cmd.Bool("yes") && !confirm("Are you sure you want to proceed? (yes/no)") {
+						fmt.Println("Operation aborted.")
+						return nil
+					}
+					fmt.Println()
+
+					c := command.NewDestroyCommand(command.NewDestroyCommandParams{
+						Name:      cmd.Args().First(),
+						Namespace: cmd.String("namespace"),
+						Timeout:   cmd.Duration("timeout"),
+					})
+
+					if err := c.Validate(); err != nil {
+						return err
+					}
+
+					return c.Run(ctx)
+				},
 			},
 			{
 				Name:      "deployment",
@@ -91,7 +132,7 @@ func main() {
 						Name:     "timeout",
 						Usage:    "timeout for the deployment. eg: 30s",
 						Required: false,
-						Value:    30 * time.Second,
+						Value:    time.Minute,
 					},
 					&cli.BoolFlag{
 						Name:     "yes",

@@ -1,6 +1,7 @@
 package command
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"log/slog"
@@ -71,12 +72,6 @@ func (c *DeploymentCommand) Validate() error {
 	if c.Image == "" {
 		return fmt.Errorf("Image is required")
 	}
-	if c.ContainerPort < 0 {
-		return fmt.Errorf("ContainerPort must be greater than or equal to 0")
-	}
-	if c.Port < 1 {
-		return fmt.Errorf("Port must be greater than 0")
-	}
 	if c.CopyFolder == "" {
 		return fmt.Errorf("CopyFolder is required")
 	}
@@ -87,13 +82,24 @@ func (c *DeploymentCommand) Validate() error {
 		return fmt.Errorf("Timeout must be greater than 10s")
 	}
 	if c.Service {
-		if c.ContainerPort == 0 || c.Port == 0 {
-			return fmt.Errorf("ContainerPort and Port are required for service")
+		if c.Port < 0 {
+			return fmt.Errorf("Port must be greater than 0")
+		}
+		if c.ContainerPort < 0 {
+			return fmt.Errorf("ContainerPort must be greater than 0")
 		}
 	}
 	if c.Ingress {
-		if c.IngressHost == "" || c.IngressClass == "" || c.Port == 0 {
-			return fmt.Errorf("IngressHost and IngressClass are required for ingress")
+		if c.Port < 0 {
+			return fmt.Errorf("Port must be greater than 0")
+		}
+
+		if c.IngressHost == "" {
+			return fmt.Errorf("IngressHost is required")
+		}
+
+		if c.IngressClass == "" {
+			return fmt.Errorf("IngressClass is required")
 		}
 	}
 	return nil
@@ -101,6 +107,7 @@ func (c *DeploymentCommand) Validate() error {
 
 func (c *DeploymentCommand) Run(ctx context.Context) error {
 	slog.Info("Starting deployment...")
+	c.Namespace = cmp.Or(c.Namespace, "default")
 
 	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
 	defer cancel()
@@ -118,7 +125,7 @@ func (c *DeploymentCommand) Run(ctx context.Context) error {
 		return fmt.Errorf("Failed to create k8s clientset: %s", err)
 	}
 
-	pvcName := fmt.Sprintf("%s-app-pvc", c.Name)
+	pvcName := pvcName(c.Name)
 	err = k8s.CreatePVCIfNotExists(ctx, clientset, k8s.CreatePVCIfNotExistsParams{
 		Name:      pvcName,
 		Namespace: c.Namespace,

@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"os/exec"
@@ -24,15 +23,14 @@ type WaitForRunningInitContainerParams struct {
 
 func WaitForRunningInitContainer(ctx context.Context, clientset *kubernetes.Clientset, params WaitForRunningInitContainerParams) (*corev1.Pod, error) {
 	sleep := 5 * time.Second
-	namespace := cmp.Or(params.Namespace, "default")
-	podsClient := clientset.CoreV1().Pods(namespace)
+	podsClient := clientset.CoreV1().Pods(params.Namespace)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil, fmt.Errorf("context cancelled while waiting for init container to be running")
 		default:
-			slog.With("name", params.Name, "namespace", namespace).Info("Waiting for init container to be running...")
+			slog.With("name", params.Name, "namespace", params.Namespace).Info("Waiting for init container to be running...")
 
 			pods, err := podsClient.List(ctx, metav1.ListOptions{LabelSelector: fmt.Sprintf("app=%s", params.Name)})
 			if err != nil {
@@ -69,11 +67,9 @@ type CopyFolderToPodParams struct {
 }
 
 func CopyFolderToPod(params CopyFolderToPodParams) error {
-	namespace := cmp.Or(params.Namespace, "default")
+	slog.With("podName", params.PodName, "namespace", params.Namespace).Info("Copying folder to pod...")
 
-	slog.With("podName", params.PodName, "namespace", namespace).Info("Copying folder to pod...")
-
-	cmd := exec.Command("kubectl", "cp", params.LocalPath, fmt.Sprintf("%s:%s", params.PodName, params.ContainerPath), "-c", params.InitContainerName, "-n", namespace)
+	cmd := exec.Command("kubectl", "cp", params.LocalPath, fmt.Sprintf("%s:%s", params.PodName, params.ContainerPath), "-c", params.InitContainerName, "-n", params.Namespace)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {

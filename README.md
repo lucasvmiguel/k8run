@@ -12,6 +12,17 @@ Containerization offers many advantages in a production environment, but sometim
 
 * [kubectl](https://kubernetes.io/docs/reference/kubectl/)
 
+## Installation
+
+```bash
+bash <(curl -sSL https://raw.githubusercontent.com/lucasvmiguel/k8run/main/install.sh)
+```
+
+Other ways:
+
+* [Install binaries](https://github.com/lucasvmiguel/k8run/releases)
+* `go install github.com/lucasvmiguel/k8run@latest` (in case you have Golang installed)
+
 ## Features
 - Create Kubernetes **Deployments** easily.
 - Automatically create **Services** to expose your applications.
@@ -19,19 +30,9 @@ Containerization offers many advantages in a production environment, but sometim
 - Specify container images, ports, and entry points.
 - Copy local folders into the container for easy prototyping.
 
+## How it works
 
-## Installation
-
-```bash
-bash <(curl -sSL https://raw.githubusercontent.com/lucasvmiguel/k8run/main/install.sh)
-```
-
-if you have Golang installed, you can also install by running:
-```bash
-go install github.com/lucasvmiguel/k8run@latest
-```
-
-You can also download the binary [here](https://github.com/lucasvmiguel/k8run/releases)
+**k8run** simplifies Kubernetes deployments by using an init container to handle the setup process. When a deployment starts, the init container continuously monitors the contents of a specified folder. Simultaneously, k8run copies the folder specified by the `--copy-folder` label into the init container. Once the init container detects that the folder is no longer empty, it exits, signaling that the setup is complete. At this point, the main container (defined by the `--image` label) starts executing with the specified entry point (set via the `--entrypoint` label).
 
 ## Usage
 
@@ -79,12 +80,36 @@ k8run deployment foobar \
   --copy-folder /Users/myuser/projects/foobar
 ```
 
+### Destroy a deployment (also destroys all resources associated with it)
+
+Usage:
+
+```bash
+NAME:
+   k8run destroy - Destroys a deployment with all its dependending resources
+
+USAGE:
+   k8run destroy [command [command options]] <name>
+
+OPTIONS:
+   --namespace value  namespace to be used. eg: 'default' (default: "default")
+   --timeout value    timeout for the deployment. eg: 30s (default: 1m0s)
+   --yes, -y          skips the confirmation (default: false)
+   --help, -h         show help
+```
+
+Example:
+
+```bash
+k8run deployment foobar --namespace default
+```
+
+
 ## Roadmap
 
 * Add video of how to use the tool
 * Remove dependency of kubectl
 * Add integration tests
-* Add destroy command
 * Add job command
 * Add cronjob command
 

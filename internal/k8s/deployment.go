@@ -11,6 +11,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -32,13 +33,12 @@ type CreateOrUpdateDeploymentParams struct {
 func CreateOrUpdateDeployment(ctx context.Context, clientset *kubernetes.Clientset, params CreateOrUpdateDeploymentParams) error {
 	deploymentsClient := clientset.AppsV1().Deployments(params.Namespace)
 	replicas := cmp.Or(params.Replicas, int32(1))
-	namespace := cmp.Or(params.Namespace, "default")
 	envVarDeployTimestamp := "K8RUN_DEPLOY_TIMESTAMP"
 
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      params.Name,
-			Namespace: namespace,
+			Namespace: params.Namespace,
 			Labels: map[string]string{
 				LabelNameCreatedBy:         LabelValueCreatedBy,
 				LabelNameReleaseIdentifier: params.ReleaseIdentifier,
@@ -127,7 +127,7 @@ func CreateOrUpdateDeployment(ctx context.Context, clientset *kubernetes.Clients
 		if err != nil {
 			return fmt.Errorf("failed to create deployment: %w", err)
 		}
-		slog.With("name", params.Name, "namespace", namespace).Info("Deployment created")
+		slog.With("name", params.Name, "namespace", params.Namespace).Info("Deployment created")
 	} else {
 		if existentDeployment.Labels[LabelNameCreatedBy] != LabelValueCreatedBy {
 			return fmt.Errorf("deployment already exists but it has not been created by k8run")
@@ -137,8 +137,51 @@ func CreateOrUpdateDeployment(ctx context.Context, clientset *kubernetes.Clients
 		if err != nil {
 			return fmt.Errorf("failed to update deployment: %w", err)
 		}
-		slog.With("name", params.Name, "namespace", namespace).Info("Deployment updated")
+		slog.With("name", params.Name, "namespace", params.Namespace).Info("Deployment updated")
 	}
 
 	return nil
+}
+
+type DeleteDeploymentParams struct {
+	Name      string
+	Namespace string
+}
+
+func DeleteDeployment(ctx context.Context, clientset *kubernetes.Clientset, params DeleteDeploymentParams) error {
+	deploymentsClient := clientset.AppsV1().Deployments(params.Namespace)
+
+	existentDeployment, err := GetDeployment(ctx, clientset, GetParams{
+		Name:      params.Name,
+		Namespace: params.Namespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	if existentDeployment.Labels[LabelNameCreatedBy] != LabelValueCreatedBy {
+		return fmt.Errorf("deployment already exists but it has not been created by k8run")
+	}
+
+	err = deploymentsClient.Delete(ctx, params.Name, metav1.DeleteOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to delete deployment: %w", err)
+	}
+
+	slog.With("name", params.Name, "namespace", params.Namespace).Info("Deployment marked for deletion")
+	return nil
+}
+
+func GetDeployment(ctx context.Context, clientset *kubernetes.Clientset, params GetParams) (*appsv1.Deployment, error) {
+	deploymentsClient := clientset.AppsV1().Deployments(params.Namespace)
+	existentDeployment, err := deploymentsClient.Get(ctx, params.Name, metav1.GetOptions{})
+	if err != nil {
+		if k8serrors.IsNotFound(err) {
+			return nil, fmt.Errorf("deployment %q not found in namespace %q: %w", params.Name, params.Namespace, ErrResourceNotFound)
+		}
+
+		return nil, fmt.Errorf("failed to get deployment: %w", err)
+	}
+
+	return existentDeployment, nil
 }
