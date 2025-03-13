@@ -19,12 +19,14 @@ cli-update-version:
 		echo "❌ Failed to update version. Ensure 'Version:' is defined correctly in $(MAIN_GO)"; \
 		exit 1; \
 	fi
-	git commit -am "Update version to $(VERSION)"
+	git commit -am "Update cli version to $(VERSION)"
 	git push origin main
 
 install-script-update-version:
 	sed -i '' 's/VERSION=.*/VERSION="$(VERSION)"/' install.sh; \
 	echo "✅ Version updated to $(VERSION)."
+	git commit -am "Update install script version to $(VERSION)"
+	git push origin main
 
 release: cli-update-version install-script-update-version
 	git tag -a v$(VERSION) -m "Release version $(VERSION)"
