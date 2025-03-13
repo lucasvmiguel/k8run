@@ -1,4 +1,4 @@
-VERSION ?= 0.0.10
+VERSION ?= 0.0.11
 MAIN_GO = main.go
 
 test:

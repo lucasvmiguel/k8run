@@ -17,7 +17,7 @@ func main() {
 	cmd := &cli.Command{
 		Name:    "k8run",
 		Usage:   "k8run is a CLI tool designed to quickly prototype Kubernetes deployments, services, and ingresses. It simplifies the process of setting up a working Kubernetes environment for development and testing.",
-		Version: "0.0.9",
+		Version: "0.0.11",
 		Commands: []*cli.Command{
 			{
 				Name:      "destroy",
