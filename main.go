@@ -80,8 +80,8 @@ func main() {
 						Required: true,
 					},
 					&cli.StringFlag{
-						Name:     "copy-folder",
-						Usage:    "folder to be copied to the container. eg: '/Users/me/my_local_folder_to_copy'",
+						Name:     "copy",
+						Usage:    "file or folder to be copied to the container. eg: '/Users/me/my_local_folder_to_copy'",
 						Required: true,
 					},
 					&cli.BoolFlag{
@@ -155,9 +155,9 @@ func main() {
 						Entrypoint: strings.Split(cmd.String("entrypoint"), " "),
 						Timeout:    cmd.Duration("timeout"),
 						// Deployment
-						Replicas:   int32(cmd.Int("replicas")),
-						CopyFolder: fmt.Sprintf("%s/.", cmd.String("copy-folder")),
-						Image:      cmd.String("image"),
+						Replicas: int32(cmd.Int("replicas")),
+						Copy:     cmd.String("copy"),
+						Image:    cmd.String("image"),
 						// Service
 						Service:       cmd.Bool("service"),
 						ContainerPort: cmd.Int("container-port"),

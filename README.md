@@ -35,7 +35,7 @@ Other ways:
 
 ## How it works
 
-**k8run** simplifies Kubernetes deployments by using an init container to handle the setup process. When a deployment starts, the init container continuously monitors the contents of a specified folder. Simultaneously, k8run copies the folder specified by the `--copy-folder` label into the init container. Once the init container detects that the folder is no longer empty, it exits, signaling that the setup is complete. At this point, the main container (defined by the `--image` label) starts executing with the specified entry point (set via the `--entrypoint` label).
+**k8run** simplifies Kubernetes deployments by using an init container to handle the setup process. When a deployment starts, the init container continuously monitors the contents of a specified folder. Simultaneously, k8run copies a file or folder specified by the `--copy` label into the init container. Once the init container detects the content has been copied, it exits, signaling that the setup is complete. At this point, the main container (defined by the `--image` label) starts executing with the specified entry point (set via the `--entrypoint` label).
 
 ## Usage
 
@@ -53,7 +53,7 @@ USAGE:
 OPTIONS:
    --entrypoint value      entrypoint of the container. eg: 'node index.js'
    --image value           image to be used. eg: 'node:14'
-   --copy-folder value     folder to be copied to the container. eg: '/Users/me/my_local_folder_to_copy'
+   --copy value     to be copied to the container. eg: '/Users/me/my_local_folder_to_copy'
    --service               if service will be created (default: false)
    --ingress               if ingress will be created (default: false)
    --container-port value  port that the container is listening to (default: 0)
@@ -79,8 +79,8 @@ k8run deployment foobar \
   --ingress-host foobar.myproject.me \
   --image node \
   --namespace default \
-  --entrypoint "node index.js" \
-  --copy-folder /Users/myuser/projects/foobar
+  --entrypoint "node foobar/index.js" \
+  --copy /Users/myuser/projects/foobar
 ```
 
 ### Destroy a deployment (also destroys all resources associated with it)

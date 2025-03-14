@@ -22,7 +22,7 @@ type CreateOrUpdateDeploymentParams struct {
 	Entrypoint           []string
 	ContainerPort        int32
 	Image                string
-	CopyFolderTo         string
+	CopyTo               string
 	Replicas             int32
 	PVCName              string
 	InitContainerName    string
@@ -68,7 +68,7 @@ func CreateOrUpdateDeployment(ctx context.Context, clientset *kubernetes.Clients
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "app",
-									MountPath: params.CopyFolderTo,
+									MountPath: params.CopyTo,
 								},
 							},
 							Env: []corev1.EnvVar{
@@ -84,7 +84,7 @@ func CreateOrUpdateDeployment(ctx context.Context, clientset *kubernetes.Clients
 							Name:       params.Name,
 							Image:      params.Image,
 							Args:       params.Entrypoint,
-							WorkingDir: params.CopyFolderTo,
+							WorkingDir: params.CopyTo,
 							Ports: []corev1.ContainerPort{
 								{
 									ContainerPort: params.ContainerPort,
@@ -94,7 +94,7 @@ func CreateOrUpdateDeployment(ctx context.Context, clientset *kubernetes.Clients
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "app",
-									MountPath: params.CopyFolderTo,
+									MountPath: params.CopyTo,
 								},
 							},
 							Env: []corev1.EnvVar{
@@ -184,4 +184,35 @@ func GetDeployment(ctx context.Context, clientset *kubernetes.Clientset, params 
 	}
 
 	return existentDeployment, nil
+}
+
+type WaitForDeploymentToBeReadyParams struct {
+	Name              string
+	Namespace         string
+	ReleaseIdentifier string
+}
+
+func WaitForDeploymentToBeReady(ctx context.Context, clientset *kubernetes.Clientset, params WaitForDeploymentToBeReadyParams) error {
+	for {
+		deployment, err := GetDeployment(ctx, clientset, GetParams{
+			Name:      params.Name,
+			Namespace: params.Namespace,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to get deployment: %w", err)
+		}
+
+		if deployment.Labels[LabelNameCreatedBy] != LabelValueCreatedBy {
+			return fmt.Errorf("deployment already exists but it has not been created by k8run")
+		}
+
+		if deployment.Labels[LabelNameReleaseIdentifier] == params.ReleaseIdentifier && deployment.Status.ReadyReplicas == *deployment.Spec.Replicas {
+			break
+		}
+
+		slog.With("name", params.Name, "namespace", params.Namespace).Info("Waiting for deployment to be ready...")
+		time.Sleep(2 * time.Second)
+	}
+
+	return nil
 }

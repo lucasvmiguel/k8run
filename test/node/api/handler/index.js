@@ -1,5 +1,5 @@
 export function rootHandler(req, res) {
-  res.send("Hello Wooooooorld 555!");
+  res.send("Hello World!");
 }
 
 export function userHandler(req, res) {

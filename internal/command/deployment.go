@@ -18,7 +18,7 @@ import (
 type NewDeploymentCommandParams struct {
 	Name          string
 	Entrypoint    []string
-	CopyFolder    string
+	Copy          string
 	ContainerPort int64
 	Port          int64
 	Service       bool
@@ -34,7 +34,7 @@ type NewDeploymentCommandParams struct {
 type DeploymentCommand struct {
 	Name          string
 	Entrypoint    []string
-	CopyFolder    string
+	Copy          string
 	ContainerPort int64
 	Port          int64
 	Service       bool
@@ -51,7 +51,7 @@ func NewDeploymentCommand(params NewDeploymentCommandParams) *DeploymentCommand 
 	return &DeploymentCommand{
 		Name:          params.Name,
 		Entrypoint:    params.Entrypoint,
-		CopyFolder:    params.CopyFolder,
+		Copy:          params.Copy,
 		ContainerPort: params.ContainerPort,
 		Port:          params.Port,
 		Service:       params.Service,
@@ -72,8 +72,8 @@ func (c *DeploymentCommand) Validate() error {
 	if c.Image == "" {
 		return fmt.Errorf("Image is required")
 	}
-	if c.CopyFolder == "" {
-		return fmt.Errorf("CopyFolder is required")
+	if c.Copy == "" {
+		return fmt.Errorf("Copy is required")
 	}
 	if c.Replicas < 1 {
 		return fmt.Errorf("Replicas must be greater than 0")
@@ -112,7 +112,7 @@ func (c *DeploymentCommand) Run(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
 	defer cancel()
 
-	copyFolderTo := "/app"
+	copyTo := "/app"
 	initContainerName := "wait-to-copy-app"
 
 	config, err := clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
@@ -141,15 +141,15 @@ func (c *DeploymentCommand) Run(ctx context.Context) error {
 		Entrypoint:        c.Entrypoint,
 		ContainerPort:     int32(c.ContainerPort),
 		Image:             c.Image,
-		CopyFolderTo:      copyFolderTo,
+		CopyTo:            copyTo,
 		Replicas:          c.Replicas,
 		PVCName:           pvcName,
 		InitContainerName: initContainerName,
 		ReleaseIdentifier: releaseIdentifier,
 		InitContainerCommand: []string{
 			"sh", "-c", fmt.Sprintf(
-				`rm -rf %s/* && until [ -n "$(ls -A %s)" ]; do echo "Waiting for folder to be non-empty"; sleep 5; done; exit 0`,
-				copyFolderTo, copyFolderTo),
+				`rm -rf %s/* && until [ -n "$(ls -A %s)" ]; do echo "Waiting for folder to be non-empty"; sleep 5; done; sleep 2; exit 0`,
+				copyTo, copyTo),
 		},
 	})
 	if err != nil {
@@ -166,10 +166,10 @@ func (c *DeploymentCommand) Run(ctx context.Context) error {
 		return fmt.Errorf("Failed to wait for init container: %s", err)
 	}
 
-	err = k8s.CopyFolderToPod(k8s.CopyFolderToPodParams{
-		LocalPath:         c.CopyFolder,
+	err = k8s.CopyToPod(k8s.CopyToPodParams{
+		LocalPath:         c.Copy,
 		PodName:           pod.Name,
-		ContainerPath:     copyFolderTo,
+		ContainerPath:     copyTo,
 		InitContainerName: initContainerName,
 		Namespace:         c.Namespace,
 	})
@@ -202,6 +202,12 @@ func (c *DeploymentCommand) Run(ctx context.Context) error {
 			return fmt.Errorf("Failed to create or update ingress: %s", err)
 		}
 	}
+
+	err = k8s.WaitForDeploymentToBeReady(ctx, clientset, k8s.WaitForDeploymentToBeReadyParams{
+		Namespace:         c.Namespace,
+		Name:              c.Name,
+		ReleaseIdentifier: releaseIdentifier,
+	})
 
 	slog.Info("Deployment finished!")
 

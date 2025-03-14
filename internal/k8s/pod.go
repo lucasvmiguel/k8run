@@ -58,7 +58,7 @@ func WaitForRunningInitContainer(ctx context.Context, clientset *kubernetes.Clie
 	}
 }
 
-type CopyFolderToPodParams struct {
+type CopyToPodParams struct {
 	LocalPath         string
 	PodName           string
 	ContainerPath     string
@@ -66,8 +66,8 @@ type CopyFolderToPodParams struct {
 	Namespace         string
 }
 
-func CopyFolderToPod(params CopyFolderToPodParams) error {
-	slog.With("podName", params.PodName, "namespace", params.Namespace).Info("Copying folder to pod...")
+func CopyToPod(params CopyToPodParams) error {
+	slog.With("podName", params.PodName, "namespace", params.Namespace).Info("Copying to pod...")
 
 	cmd := exec.Command("kubectl", "cp", params.LocalPath, fmt.Sprintf("%s:%s", params.PodName, params.ContainerPath), "-c", params.InitContainerName, "-n", params.Namespace)
 
