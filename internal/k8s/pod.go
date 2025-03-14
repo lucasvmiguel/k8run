@@ -8,7 +8,6 @@ import (
 
 	"log/slog"
 
-	"github.com/davecgh/go-spew/spew"
 	"k8s.io/client-go/kubernetes"
 
 	corev1 "k8s.io/api/core/v1"
@@ -39,7 +38,6 @@ func WaitForRunningInitContainer(ctx context.Context, clientset kubernetes.Inter
 			if err != nil {
 				return nil, fmt.Errorf("failed to list pods: %w", err)
 			}
-			spew.Dump(pods)
 
 			if len(pods.Items) == 0 {
 				time.Sleep(sleep)
