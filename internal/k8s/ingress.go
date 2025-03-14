@@ -11,6 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// CreateOrUpdateIngressParams represents the parameters to create or update an ingress.
 type CreateOrUpdateIngressParams struct {
 	Name         string
 	Namespace    string
@@ -19,7 +20,8 @@ type CreateOrUpdateIngressParams struct {
 	Port         int32
 }
 
-func CreateOrUpdateIngress(ctx context.Context, clientset *kubernetes.Clientset, params CreateOrUpdateIngressParams) error {
+// CreateOrUpdateIngress creates or updates an ingress in the given namespace.
+func CreateOrUpdateIngress(ctx context.Context, clientset kubernetes.Interface, params CreateOrUpdateIngressParams) error {
 	ingress := &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      params.Name,
@@ -79,12 +81,14 @@ func CreateOrUpdateIngress(ctx context.Context, clientset *kubernetes.Clientset,
 	return nil
 }
 
+// DeleteIngressParams represents the parameters to delete an ingress.
 type DeleteIngressParams struct {
 	Name      string
 	Namespace string
 }
 
-func DeleteIngress(ctx context.Context, clientset *kubernetes.Clientset, params DeleteIngressParams) error {
+// DeleteIngress deletes an ingress in the given namespace.
+func DeleteIngress(ctx context.Context, clientset kubernetes.Interface, params DeleteIngressParams) error {
 	ingressesClient := clientset.NetworkingV1().Ingresses(params.Namespace)
 
 	existentIngress, err := GetIngress(ctx, clientset, GetParams{
@@ -108,7 +112,8 @@ func DeleteIngress(ctx context.Context, clientset *kubernetes.Clientset, params 
 	return nil
 }
 
-func GetIngress(ctx context.Context, clientset *kubernetes.Clientset, params GetParams) (*networkingv1.Ingress, error) {
+// GetIngressParams represents the parameters to get an ingress.
+func GetIngress(ctx context.Context, clientset kubernetes.Interface, params GetParams) (*networkingv1.Ingress, error) {
 	ingressesClient := clientset.NetworkingV1().Ingresses(params.Namespace)
 	existentIngress, err := ingressesClient.Get(ctx, params.Name, metav1.GetOptions{})
 	if err != nil {

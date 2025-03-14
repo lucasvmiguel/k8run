@@ -12,12 +12,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// CreatePVCIfNotExistsParams represents the parameters to create a PVC if it does not exist.
 type CreatePVCIfNotExistsParams struct {
 	Name      string
 	Namespace string
 }
 
-func CreatePVCIfNotExists(ctx context.Context, clientset *kubernetes.Clientset, params CreatePVCIfNotExistsParams) error {
+// CreatePVCIfNotExists creates a PVC if it does not exist in the given namespace.
+func CreatePVCIfNotExists(ctx context.Context, clientset kubernetes.Interface, params CreatePVCIfNotExistsParams) error {
 	pvcClient := clientset.CoreV1().PersistentVolumeClaims(params.Namespace)
 	pvc, err := pvcClient.Get(ctx, params.Name, metav1.GetOptions{})
 	if err == nil {
@@ -57,12 +59,14 @@ func CreatePVCIfNotExists(ctx context.Context, clientset *kubernetes.Clientset, 
 	return nil
 }
 
+// DeletePVCParams represents the parameters to delete a PVC.
 type DeletePVCParams struct {
 	Name      string
 	Namespace string
 }
 
-func DeletePVC(ctx context.Context, clientset *kubernetes.Clientset, params DeletePVCParams) error {
+// DeletePVC deletes a PVC in the given namespace.
+func DeletePVC(ctx context.Context, clientset kubernetes.Interface, params DeletePVCParams) error {
 	pvcClient := clientset.CoreV1().PersistentVolumeClaims(params.Namespace)
 
 	pvc, err := GetPVC(ctx, clientset, GetParams{
@@ -86,7 +90,8 @@ func DeletePVC(ctx context.Context, clientset *kubernetes.Clientset, params Dele
 	return nil
 }
 
-func GetPVC(ctx context.Context, clientset *kubernetes.Clientset, params GetParams) (*corev1.PersistentVolumeClaim, error) {
+// GetPVC retrieves a PVC in the given namespace.
+func GetPVC(ctx context.Context, clientset kubernetes.Interface, params GetParams) (*corev1.PersistentVolumeClaim, error) {
 	pvcClient := clientset.CoreV1().PersistentVolumeClaims(params.Namespace)
 	pvc, err := pvcClient.Get(ctx, params.Name, metav1.GetOptions{})
 	if err != nil {

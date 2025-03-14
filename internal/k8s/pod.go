@@ -8,12 +8,14 @@ import (
 
 	"log/slog"
 
+	"github.com/davecgh/go-spew/spew"
 	"k8s.io/client-go/kubernetes"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// WaitForRunningInitContainerParams represents the parameters to wait for a running init container.
 type WaitForRunningInitContainerParams struct {
 	Namespace         string
 	Name              string
@@ -21,7 +23,8 @@ type WaitForRunningInitContainerParams struct {
 	ReleaseIdentifier string
 }
 
-func WaitForRunningInitContainer(ctx context.Context, clientset *kubernetes.Clientset, params WaitForRunningInitContainerParams) (*corev1.Pod, error) {
+// WaitForRunningInitContainer waits for the init container to be running.
+func WaitForRunningInitContainer(ctx context.Context, clientset kubernetes.Interface, params WaitForRunningInitContainerParams) (*corev1.Pod, error) {
 	sleep := 5 * time.Second
 	podsClient := clientset.CoreV1().Pods(params.Namespace)
 
@@ -32,10 +35,11 @@ func WaitForRunningInitContainer(ctx context.Context, clientset *kubernetes.Clie
 		default:
 			slog.With("name", params.Name, "namespace", params.Namespace).Info("Waiting for init container to be running...")
 
-			pods, err := podsClient.List(ctx, metav1.ListOptions{LabelSelector: fmt.Sprintf("app=%s", params.Name)})
+			pods, err := podsClient.List(ctx, metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", LabelNameReleaseIdentifier, params.ReleaseIdentifier)})
 			if err != nil {
 				return nil, fmt.Errorf("failed to list pods: %w", err)
 			}
+			spew.Dump(pods)
 
 			if len(pods.Items) == 0 {
 				time.Sleep(sleep)
@@ -58,6 +62,7 @@ func WaitForRunningInitContainer(ctx context.Context, clientset *kubernetes.Clie
 	}
 }
 
+// CopyToPodParams represents the parameters to copy a folder to a pod.
 type CopyToPodParams struct {
 	LocalPath         string
 	PodName           string
@@ -66,6 +71,7 @@ type CopyToPodParams struct {
 	Namespace         string
 }
 
+// CopyToPod copies a file or folder to a pod.
 func CopyToPod(params CopyToPodParams) error {
 	slog.With("podName", params.PodName, "namespace", params.Namespace).Info("Copying to pod...")
 

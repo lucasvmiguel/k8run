@@ -15,18 +15,21 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+// NewDestroyCommandParams represents the parameters to create a new destroy command.
 type NewDestroyCommandParams struct {
 	Name      string
 	Namespace string
 	Timeout   time.Duration
 }
 
+// DestroyCommand represents a command to destroy an application and its related resources in a Kubernetes cluster.
 type DestroyCommand struct {
 	Name      string
 	Namespace string
 	Timeout   time.Duration
 }
 
+// NewDestroyCommand creates a new destroy command.
 func NewDestroyCommand(params NewDestroyCommandParams) *DestroyCommand {
 	return &DestroyCommand{
 		Name:      params.Name,
@@ -35,6 +38,7 @@ func NewDestroyCommand(params NewDestroyCommandParams) *DestroyCommand {
 	}
 }
 
+// Validate validates the parameters of the destroy command.
 func (c *DestroyCommand) Validate() error {
 	if c.Name == "" {
 		return fmt.Errorf("Name is required")
@@ -46,6 +50,7 @@ func (c *DestroyCommand) Validate() error {
 	return nil
 }
 
+// Run runs the destroy command.
 func (c *DestroyCommand) Run(ctx context.Context) error {
 	slog.Info("Starting destroying...")
 	c.Namespace = cmp.Or(c.Namespace, "default")

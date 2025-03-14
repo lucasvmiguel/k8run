@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+// NewDeploymentCommandParams represents the parameters to create a new deployment command.
 type NewDeploymentCommandParams struct {
 	Name          string
 	Entrypoint    []string
@@ -31,6 +32,7 @@ type NewDeploymentCommandParams struct {
 	Timeout       time.Duration
 }
 
+// DeploymentCommand represents a command to deploy an application and its related resources in a Kubernetes cluster.
 type DeploymentCommand struct {
 	Name          string
 	Entrypoint    []string
@@ -47,6 +49,7 @@ type DeploymentCommand struct {
 	Timeout       time.Duration
 }
 
+// NewDeploymentCommand creates a new deployment command.
 func NewDeploymentCommand(params NewDeploymentCommandParams) *DeploymentCommand {
 	return &DeploymentCommand{
 		Name:          params.Name,
@@ -65,6 +68,7 @@ func NewDeploymentCommand(params NewDeploymentCommandParams) *DeploymentCommand 
 	}
 }
 
+// Validate validates the parameters of the deployment command.
 func (c *DeploymentCommand) Validate() error {
 	if c.Name == "" {
 		return fmt.Errorf("Name is required")
@@ -105,6 +109,7 @@ func (c *DeploymentCommand) Validate() error {
 	return nil
 }
 
+// Run runs the deployment command.
 func (c *DeploymentCommand) Run(ctx context.Context) error {
 	slog.Info("Starting deployment...")
 	c.Namespace = cmp.Or(c.Namespace, "default")

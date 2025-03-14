@@ -1,6 +1,7 @@
 ![k8run Logo](docs/logo.png)
 
 ![Go Tests](https://github.com/lucasvmiguel/k8run/actions/workflows/ci.yml/badge.svg)
+[![Go Reference](https://pkg.go.dev/badge/github.com/lucasvmiguel/k8run.svg)](https://pkg.go.dev/github.com/lucasvmiguel/k8run)
 
 
 **k8run** is a CLI tool designed to quickly prototype Kubernetes deployments, services, and ingresses. It simplifies the process of setting up a working Kubernetes environment for development and testing.
@@ -110,9 +111,7 @@ k8run deployment foobar --namespace default
 
 ## Roadmap
 
-* Add video of how to use the tool
 * Remove dependency of kubectl
-* Add integration tests
 * Add job command
 * Add cronjob command
 

@@ -16,6 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// CreateOrUpdateDeploymentParams represents the parameters to create or update a deployment.
 type CreateOrUpdateDeploymentParams struct {
 	Name                 string
 	Namespace            string
@@ -30,7 +31,8 @@ type CreateOrUpdateDeploymentParams struct {
 	ReleaseIdentifier    string
 }
 
-func CreateOrUpdateDeployment(ctx context.Context, clientset *kubernetes.Clientset, params CreateOrUpdateDeploymentParams) error {
+// CreateOrUpdateDeployment creates or updates a deployment in the given namespace.
+func CreateOrUpdateDeployment(ctx context.Context, clientset kubernetes.Interface, params CreateOrUpdateDeploymentParams) error {
 	deploymentsClient := clientset.AppsV1().Deployments(params.Namespace)
 	replicas := cmp.Or(params.Replicas, int32(1))
 	envVarDeployTimestamp := "K8RUN_DEPLOY_TIMESTAMP"
@@ -143,12 +145,14 @@ func CreateOrUpdateDeployment(ctx context.Context, clientset *kubernetes.Clients
 	return nil
 }
 
+// DeleteDeploymentParams represents the parameters to delete a deployment.
 type DeleteDeploymentParams struct {
 	Name      string
 	Namespace string
 }
 
-func DeleteDeployment(ctx context.Context, clientset *kubernetes.Clientset, params DeleteDeploymentParams) error {
+// DeleteDeployment deletes a deployment in the given namespace.
+func DeleteDeployment(ctx context.Context, clientset kubernetes.Interface, params DeleteDeploymentParams) error {
 	deploymentsClient := clientset.AppsV1().Deployments(params.Namespace)
 
 	existentDeployment, err := GetDeployment(ctx, clientset, GetParams{
@@ -172,7 +176,8 @@ func DeleteDeployment(ctx context.Context, clientset *kubernetes.Clientset, para
 	return nil
 }
 
-func GetDeployment(ctx context.Context, clientset *kubernetes.Clientset, params GetParams) (*appsv1.Deployment, error) {
+// GetDeployment retrieves a deployment in the given namespace.
+func GetDeployment(ctx context.Context, clientset kubernetes.Interface, params GetParams) (*appsv1.Deployment, error) {
 	deploymentsClient := clientset.AppsV1().Deployments(params.Namespace)
 	existentDeployment, err := deploymentsClient.Get(ctx, params.Name, metav1.GetOptions{})
 	if err != nil {
@@ -186,13 +191,15 @@ func GetDeployment(ctx context.Context, clientset *kubernetes.Clientset, params 
 	return existentDeployment, nil
 }
 
+// WaitForDeploymentToBeReadyParams represents the parameters to wait for a deployment to be ready.
 type WaitForDeploymentToBeReadyParams struct {
 	Name              string
 	Namespace         string
 	ReleaseIdentifier string
 }
 
-func WaitForDeploymentToBeReady(ctx context.Context, clientset *kubernetes.Clientset, params WaitForDeploymentToBeReadyParams) error {
+// WaitForDeploymentToBeReady waits for a deployment to be ready in the given namespace.
+func WaitForDeploymentToBeReady(ctx context.Context, clientset kubernetes.Interface, params WaitForDeploymentToBeReadyParams) error {
 	for {
 		deployment, err := GetDeployment(ctx, clientset, GetParams{
 			Name:      params.Name,

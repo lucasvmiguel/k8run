@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// CreateOrUpdateServiceParams represents the parameters to create or update a service.
 type CreateOrUpdateServiceParams struct {
 	Name              string
 	Namespace         string
@@ -20,7 +21,8 @@ type CreateOrUpdateServiceParams struct {
 	ReleaseIdentifier string
 }
 
-func CreateOrUpdateService(ctx context.Context, clientset *kubernetes.Clientset, params CreateOrUpdateServiceParams) error {
+// CreateOrUpdateService creates or updates a service in the given namespace.
+func CreateOrUpdateService(ctx context.Context, clientset kubernetes.Interface, params CreateOrUpdateServiceParams) error {
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      params.Name,
@@ -67,12 +69,14 @@ func CreateOrUpdateService(ctx context.Context, clientset *kubernetes.Clientset,
 	return nil
 }
 
+// DeleteServiceParams represents the parameters to delete a service.
 type DeleteServiceParams struct {
 	Name      string
 	Namespace string
 }
 
-func DeleteService(ctx context.Context, clientset *kubernetes.Clientset, params DeleteServiceParams) error {
+// DeleteService deletes a service in the given namespace.
+func DeleteService(ctx context.Context, clientset kubernetes.Interface, params DeleteServiceParams) error {
 	servicesClient := clientset.CoreV1().Services(params.Namespace)
 
 	existentService, err := GetService(ctx, clientset, GetParams{
@@ -96,7 +100,8 @@ func DeleteService(ctx context.Context, clientset *kubernetes.Clientset, params 
 	return nil
 }
 
-func GetService(ctx context.Context, clientset *kubernetes.Clientset, params GetParams) (*corev1.Service, error) {
+// GetService retrieves a service in the given namespace.
+func GetService(ctx context.Context, clientset kubernetes.Interface, params GetParams) (*corev1.Service, error) {
 	servicesClient := clientset.CoreV1().Services(params.Namespace)
 	service, err := servicesClient.Get(ctx, params.Name, metav1.GetOptions{})
 	if err != nil {
