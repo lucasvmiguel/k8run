@@ -3,7 +3,7 @@
 # Configuration
 REPO="lucasvmiguel/k8run"
 BINARY_NAME="k8run"
-VERSION="0.0.13"
+VERSION="0.1.0"
 INSTALL_DIR="/usr/local/bin"
 
 # Detect OS and architecture
